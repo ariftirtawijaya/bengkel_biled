@@ -261,6 +261,26 @@ class WorkOrderController extends Controller
         $this->view('work_orders/show', $data);
     }
 
+    public function print(string $id): void
+    {
+        $workOrder = $this->workOrderModel->getById((int) $id);
+
+        if (!$workOrder) {
+            $_SESSION['error'] = 'Work order tidak ditemukan.';
+            header('Location: ' . BASE_URL . 'workorder');
+            exit;
+        }
+
+        $data = [
+            'title' => 'Cetak Work Order',
+            'workOrder' => $workOrder,
+            'addons' => $this->workOrderModel->getAddonsByWorkOrderId((int) $id),
+            'products' => $this->workOrderModel->getProductsByWorkOrderId((int) $id),
+        ];
+
+        $this->view('work_orders/print', $data, 'print');
+    }
+
     public function delete(string $id): void
     {
         $workOrder = $this->workOrderModel->getById((int) $id);

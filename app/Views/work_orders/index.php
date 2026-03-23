@@ -60,11 +60,13 @@
                                 </td>
                                 <td><?= htmlspecialchars($wo['service_name']); ?></td>
                                 <td class="text-end">Rp
-                                    <?= number_format((float) $wo['estimated_service_price'], 0, ',', '.'); ?></td>
+                                    <?= number_format((float) $wo['estimated_service_price'], 0, ',', '.'); ?>
+                                </td>
                                 <td class="text-end">Rp <?= number_format((float) $wo['addons_total'], 0, ',', '.'); ?></td>
                                 <td class="text-end">Rp <?= number_format((float) $wo['products_total'], 0, ',', '.'); ?></td>
                                 <td class="text-end fw-semibold">Rp
-                                    <?= number_format((float) $wo['grand_total'], 0, ',', '.'); ?></td>
+                                    <?= number_format((float) $wo['grand_total'], 0, ',', '.'); ?>
+                                </td>
                                 <td>
                                     <?php
                                     $statusClass = 'bg-secondary';
@@ -87,6 +89,8 @@
                                     <div class="d-flex flex-wrap gap-2">
                                         <a href="<?= BASE_URL; ?>workorder/show/<?= $wo['id']; ?>"
                                             class="btn btn-sm btn-info text-white">Detail</a>
+                                        <a href="<?= BASE_URL; ?>workorder/print/<?= $wo['id']; ?>" target="_blank"
+                                            class="btn btn-sm btn-dark">Print</a>
                                         <a href="<?= BASE_URL; ?>workorder/edit/<?= $wo['id']; ?>"
                                             class="btn btn-sm btn-warning">Edit</a>
                                         <button type="button" class="btn btn-sm btn-danger btn-delete-workorder"

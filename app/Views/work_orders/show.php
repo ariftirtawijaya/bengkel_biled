@@ -4,6 +4,8 @@
         <p class="text-muted mb-0"><?= htmlspecialchars($workOrder['wo_number']); ?></p>
     </div>
     <div class="d-flex gap-2">
+        <a href="<?= BASE_URL; ?>workorder/print/<?= $workOrder['id']; ?>" target="_blank"
+            class="btn btn-dark">Print</a>
         <a href="<?= BASE_URL; ?>workorder/edit/<?= $workOrder['id']; ?>" class="btn btn-warning">Edit</a>
         <a href="<?= BASE_URL; ?>workorder" class="btn btn-secondary">Kembali</a>
     </div>
