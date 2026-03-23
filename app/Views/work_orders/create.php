@@ -24,14 +24,10 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Nomor WO</label>
-                    <input type="text" name="wo_number"
-                        class="form-control <?= !empty($errors['wo_number']) ? 'is-invalid' : ''; ?>"
+                    <input type="text" class="form-control"
                         value="<?= htmlspecialchars($old['wo_number'] ?? $wo_number); ?>" readonly>
-                    <?php if (!empty($errors['wo_number'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['wo_number']; ?>
-                        </div>
-                    <?php endif; ?>
+                    <input type="hidden" name="wo_number"
+                        value="<?= htmlspecialchars($old['wo_number'] ?? $wo_number); ?>">
                 </div>
 
                 <div class="col-md-4">
@@ -50,14 +46,14 @@
                     <label class="form-label">Status</label>
                     <select name="status" class="form-select <?= !empty($errors['status']) ? 'is-invalid' : ''; ?>"
                         required>
-                        <option value="pending" <?= ($old['status'] ?? 'pending') === 'pending' ? 'selected' : ''; ?>
-                            >Pending</option>
+                        <option value="pending" <?= ($old['status'] ?? 'pending') === 'pending' ? 'selected' : ''; ?>>
+                            Pending</option>
                         <option value="antri" <?= ($old['status'] ?? '') === 'antri' ? 'selected' : ''; ?>>Antri</option>
                         <option value="progress" <?= ($old['status'] ?? '') === 'progress' ? 'selected' : ''; ?>>Progress
                         </option>
                         <option value="done" <?= ($old['status'] ?? '') === 'done' ? 'selected' : ''; ?>>Done</option>
-                        <option value="cancelled" <?= ($old['status'] ?? '') === 'cancelled' ? 'selected' : ''; ?>
-                            >Cancelled</option>
+                        <option value="cancelled" <?= ($old['status'] ?? '') === 'cancelled' ? 'selected' : ''; ?>>
+                            Cancelled</option>
                     </select>
                     <?php if (!empty($errors['status'])): ?>
                         <div class="invalid-feedback">

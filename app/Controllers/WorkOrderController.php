@@ -62,6 +62,10 @@ class WorkOrderController extends Controller
             'internal_notes' => trim($_POST['internal_notes'] ?? ''),
         ];
 
+        if ($formData['wo_number'] === '') {
+            $formData['wo_number'] = $this->workOrderModel->generateWoNumber();
+        }
+
         $errors = $this->validateWorkOrder($formData);
 
         if ($formData['customer_id'] <= 0 || !$this->customerModel->getById($formData['customer_id'])) {
@@ -207,10 +211,6 @@ class WorkOrderController extends Controller
     private function validateWorkOrder(array $data): array
     {
         $errors = [];
-
-        if ($data['wo_number'] ?? '' === '') {
-            $errors['wo_number'] = 'Nomor WO wajib ada.';
-        }
 
         if ($data['work_date'] === '') {
             $errors['work_date'] = 'Tanggal work order wajib diisi.';
