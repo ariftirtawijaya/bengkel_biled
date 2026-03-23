@@ -35,6 +35,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="<?= BASE_URL; ?>service">Jasa</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= BASE_URL; ?>serviceaddon">Add-on</a>
+                        </li>
                     </ul>
                 </div>
             </div>
