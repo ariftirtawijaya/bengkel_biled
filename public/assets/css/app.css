@@ -1,0 +1,20 @@
+body {
+    background-color: #f5f7fb;
+    font-size: 14px;
+}
+
+.navbar-brand {
+    letter-spacing: 0.3px;
+}
+
+.card {
+    border-radius: 14px;
+}
+
+.btn {
+    border-radius: 10px;
+}
+
+.table {
+    vertical-align: middle;
+}
