@@ -32,6 +32,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="<?= BASE_URL; ?>vehicle">Kendaraan</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= BASE_URL; ?>service">Jasa</a>
+                        </li>
                     </ul>
                 </div>
             </div>

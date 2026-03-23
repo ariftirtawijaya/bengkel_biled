@@ -14,6 +14,7 @@ require_once __DIR__ . '/../app/Models/DashboardModel.php';
 require_once __DIR__ . '/../app/Models/ProductModel.php';
 require_once __DIR__ . '/../app/Models/CustomerModel.php';
 require_once __DIR__ . '/../app/Models/VehicleModel.php';
+require_once __DIR__ . '/../app/Models/ServiceModel.php';
 
 // Controllers
 require_once __DIR__ . '/../app/Controllers/HomeController.php';
@@ -21,5 +22,6 @@ require_once __DIR__ . '/../app/Controllers/DashboardController.php';
 require_once __DIR__ . '/../app/Controllers/ProductController.php';
 require_once __DIR__ . '/../app/Controllers/CustomerController.php';
 require_once __DIR__ . '/../app/Controllers/VehicleController.php';
+require_once __DIR__ . '/../app/Controllers/ServiceController.php';
 
 $app = new App();

@@ -57,6 +57,16 @@ $(document).ready(function () {
         });
     }
 
+    const $servicesTable = $('#servicesTable');
+    if ($servicesTable.length && $servicesTable.data('has-data') == 1) {
+        $servicesTable.DataTable({
+            responsive: true,
+            pageLength: 10,
+            order: [],
+            language: dtLanguage
+        });
+    }
+
     $(document).on('click', '.btn-delete-product', function () {
         const url = $(this).data('url');
         const name = $(this).data('name');
@@ -102,6 +112,25 @@ $(document).ready(function () {
         Swal.fire({
             title: 'Hapus kendaraan?',
             html: `Kendaraan <b>${name}</b> akan dihapus.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-delete-service', function () {
+        const url = $(this).data('url');
+        const name = $(this).data('name');
+
+        Swal.fire({
+            title: 'Hapus jasa?',
+            html: `Jasa <b>${name}</b> akan dihapus.`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Ya, hapus',
