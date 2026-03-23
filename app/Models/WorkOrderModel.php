@@ -85,10 +85,14 @@ class WorkOrderModel
 
     public function create(array $data, array $addons = [], array $products = []): bool
     {
-        try {
-            $this->db->beginTransaction();
+        $maxAttempts = 3;
+        $attempt = 0;
 
-            $stmt = $this->db->prepare("
+        while ($attempt < $maxAttempts) {
+            try {
+                $this->db->beginTransaction();
+
+                $stmt = $this->db->prepare("
                 INSERT INTO work_orders (
                     wo_number, work_date, customer_id, vehicle_id, service_id,
                     complaint, estimated_service_price, addons_total, products_total, grand_total, status, internal_notes
@@ -98,32 +102,49 @@ class WorkOrderModel
                 )
             ");
 
-            $stmt->execute([
-                'wo_number' => $data['wo_number'],
-                'work_date' => $data['work_date'],
-                'customer_id' => $data['customer_id'],
-                'vehicle_id' => $data['vehicle_id'],
-                'service_id' => $data['service_id'],
-                'complaint' => $data['complaint'],
-                'estimated_service_price' => $data['estimated_service_price'],
-                'addons_total' => $data['addons_total'],
-                'products_total' => $data['products_total'],
-                'grand_total' => $data['grand_total'],
-                'status' => $data['status'],
-                'internal_notes' => $data['internal_notes'],
-            ]);
+                $stmt->execute([
+                    'wo_number' => $data['wo_number'],
+                    'work_date' => $data['work_date'],
+                    'customer_id' => $data['customer_id'],
+                    'vehicle_id' => $data['vehicle_id'],
+                    'service_id' => $data['service_id'],
+                    'complaint' => $data['complaint'],
+                    'estimated_service_price' => $data['estimated_service_price'],
+                    'addons_total' => $data['addons_total'],
+                    'products_total' => $data['products_total'],
+                    'grand_total' => $data['grand_total'],
+                    'status' => $data['status'],
+                    'internal_notes' => $data['internal_notes'],
+                ]);
 
-            $workOrderId = (int) $this->db->lastInsertId();
+                $workOrderId = (int) $this->db->lastInsertId();
 
-            $this->insertAddons($workOrderId, $addons);
-            $this->insertProducts($workOrderId, $products);
+                $this->insertAddons($workOrderId, $addons);
+                $this->insertProducts($workOrderId, $products);
 
-            $this->db->commit();
-            return true;
-        } catch (Throwable $e) {
-            $this->db->rollBack();
-            throw $e;
+                $this->db->commit();
+                return true;
+            } catch (PDOException $e) {
+                $this->db->rollBack();
+
+                $isDuplicateWo =
+                    $e->getCode() === '23000' &&
+                    str_contains($e->getMessage(), 'wo_number');
+
+                if ($isDuplicateWo) {
+                    $attempt++;
+                    $data['wo_number'] = $this->generateWoNumber();
+                    continue;
+                }
+
+                throw $e;
+            } catch (Throwable $e) {
+                $this->db->rollBack();
+                throw $e;
+            }
         }
+
+        throw new RuntimeException('Gagal membuat nomor work order yang unik.');
     }
 
     public function update(int $id, array $data, array $addons = [], array $products = []): bool
@@ -243,16 +264,29 @@ class WorkOrderModel
     public function generateWoNumber(): string
     {
         $datePart = date('Ymd');
+        $prefix = 'WO-' . $datePart . '-';
 
         $stmt = $this->db->prepare("
-            SELECT COUNT(*) AS total
-            FROM work_orders
-            WHERE DATE(created_at) = CURDATE()
-        ");
-        $stmt->execute();
-        $countToday = (int) $stmt->fetch()['total'] + 1;
+        SELECT wo_number
+        FROM work_orders
+        WHERE wo_number LIKE :prefix
+        ORDER BY wo_number DESC
+        LIMIT 1
+    ");
+        $stmt->execute([
+            'prefix' => $prefix . '%'
+        ]);
 
-        return 'WO-' . $datePart . '-' . str_pad((string) $countToday, 3, '0', STR_PAD_LEFT);
+        $lastWoNumber = $stmt->fetchColumn();
+
+        if ($lastWoNumber) {
+            $lastSequence = (int) substr($lastWoNumber, -3);
+            $nextSequence = $lastSequence + 1;
+        } else {
+            $nextSequence = 1;
+        }
+
+        return $prefix . str_pad((string) $nextSequence, 3, '0', STR_PAD_LEFT);
     }
 
     public function getVehiclesByCustomerId(int $customerId): array
