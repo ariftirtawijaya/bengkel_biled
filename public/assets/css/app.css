@@ -18,3 +18,12 @@ body {
 .table {
     vertical-align: middle;
 }
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+}
+
+.alert {
+    border-radius: 12px;
+}
