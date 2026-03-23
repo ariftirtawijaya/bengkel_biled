@@ -57,57 +57,132 @@ class WorkOrderModel
         return $result ?: null;
     }
 
-    public function create(array $data): bool
+    public function getAddonsByWorkOrderId(int $workOrderId): array
     {
         $stmt = $this->db->prepare("
-            INSERT INTO work_orders (
-                wo_number, work_date, customer_id, vehicle_id, service_id,
-                complaint, estimated_service_price, status, internal_notes
+            SELECT *
+            FROM work_order_addons
+            WHERE work_order_id = :work_order_id
+            ORDER BY id ASC
+        ");
+        $stmt->execute(['work_order_id' => $workOrderId]);
+
+        return $stmt->fetchAll();
+    }
+
+    public function create(array $data, array $addons = []): bool
+    {
+        try {
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare("
+                INSERT INTO work_orders (
+                    wo_number, work_date, customer_id, vehicle_id, service_id,
+                    complaint, estimated_service_price, addons_total, grand_total, status, internal_notes
+                ) VALUES (
+                    :wo_number, :work_date, :customer_id, :vehicle_id, :service_id,
+                    :complaint, :estimated_service_price, :addons_total, :grand_total, :status, :internal_notes
+                )
+            ");
+
+            $stmt->execute([
+                'wo_number' => $data['wo_number'],
+                'work_date' => $data['work_date'],
+                'customer_id' => $data['customer_id'],
+                'vehicle_id' => $data['vehicle_id'],
+                'service_id' => $data['service_id'],
+                'complaint' => $data['complaint'],
+                'estimated_service_price' => $data['estimated_service_price'],
+                'addons_total' => $data['addons_total'],
+                'grand_total' => $data['grand_total'],
+                'status' => $data['status'],
+                'internal_notes' => $data['internal_notes'],
+            ]);
+
+            $workOrderId = (int) $this->db->lastInsertId();
+
+            $this->insertAddons($workOrderId, $addons);
+
+            $this->db->commit();
+            return true;
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function update(int $id, array $data, array $addons = []): bool
+    {
+        try {
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare("
+                UPDATE work_orders
+                SET work_date = :work_date,
+                    customer_id = :customer_id,
+                    vehicle_id = :vehicle_id,
+                    service_id = :service_id,
+                    complaint = :complaint,
+                    estimated_service_price = :estimated_service_price,
+                    addons_total = :addons_total,
+                    grand_total = :grand_total,
+                    status = :status,
+                    internal_notes = :internal_notes
+                WHERE id = :id
+            ");
+
+            $stmt->execute([
+                'id' => $id,
+                'work_date' => $data['work_date'],
+                'customer_id' => $data['customer_id'],
+                'vehicle_id' => $data['vehicle_id'],
+                'service_id' => $data['service_id'],
+                'complaint' => $data['complaint'],
+                'estimated_service_price' => $data['estimated_service_price'],
+                'addons_total' => $data['addons_total'],
+                'grand_total' => $data['grand_total'],
+                'status' => $data['status'],
+                'internal_notes' => $data['internal_notes'],
+            ]);
+
+            $deleteStmt = $this->db->prepare("DELETE FROM work_order_addons WHERE work_order_id = :work_order_id");
+            $deleteStmt->execute(['work_order_id' => $id]);
+
+            $this->insertAddons($id, $addons);
+
+            $this->db->commit();
+            return true;
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    private function insertAddons(int $workOrderId, array $addons): void
+    {
+        if (empty($addons)) {
+            return;
+        }
+
+        $stmt = $this->db->prepare("
+            INSERT INTO work_order_addons (
+                work_order_id, addon_id, addon_name, price, qty, subtotal, notes
             ) VALUES (
-                :wo_number, :work_date, :customer_id, :vehicle_id, :service_id,
-                :complaint, :estimated_service_price, :status, :internal_notes
+                :work_order_id, :addon_id, :addon_name, :price, :qty, :subtotal, :notes
             )
         ");
 
-        return $stmt->execute([
-            'wo_number' => $data['wo_number'],
-            'work_date' => $data['work_date'],
-            'customer_id' => $data['customer_id'],
-            'vehicle_id' => $data['vehicle_id'],
-            'service_id' => $data['service_id'],
-            'complaint' => $data['complaint'],
-            'estimated_service_price' => $data['estimated_service_price'],
-            'status' => $data['status'],
-            'internal_notes' => $data['internal_notes'],
-        ]);
-    }
-
-    public function update(int $id, array $data): bool
-    {
-        $stmt = $this->db->prepare("
-            UPDATE work_orders
-            SET work_date = :work_date,
-                customer_id = :customer_id,
-                vehicle_id = :vehicle_id,
-                service_id = :service_id,
-                complaint = :complaint,
-                estimated_service_price = :estimated_service_price,
-                status = :status,
-                internal_notes = :internal_notes
-            WHERE id = :id
-        ");
-
-        return $stmt->execute([
-            'id' => $id,
-            'work_date' => $data['work_date'],
-            'customer_id' => $data['customer_id'],
-            'vehicle_id' => $data['vehicle_id'],
-            'service_id' => $data['service_id'],
-            'complaint' => $data['complaint'],
-            'estimated_service_price' => $data['estimated_service_price'],
-            'status' => $data['status'],
-            'internal_notes' => $data['internal_notes'],
-        ]);
+        foreach ($addons as $addon) {
+            $stmt->execute([
+                'work_order_id' => $workOrderId,
+                'addon_id' => $addon['addon_id'],
+                'addon_name' => $addon['addon_name'],
+                'price' => $addon['price'],
+                'qty' => $addon['qty'],
+                'subtotal' => $addon['subtotal'],
+                'notes' => $addon['notes'],
+            ]);
+        }
     }
 
     public function delete(int $id): bool

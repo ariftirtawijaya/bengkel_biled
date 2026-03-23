@@ -38,7 +38,9 @@
                         <th>Customer</th>
                         <th>Kendaraan</th>
                         <th>Jasa</th>
-                        <th class="text-end">Estimasi Biaya</th>
+                        <th class="text-end">Jasa</th>
+                        <th class="text-end">Add-on</th>
+                        <th class="text-end">Total</th>
                         <th>Status</th>
                         <th width="240">Aksi</th>
                     </tr>
@@ -47,27 +49,20 @@
                     <?php if (!empty($workOrders)): ?>
                         <?php foreach ($workOrders as $wo): ?>
                             <tr>
-                                <td>
-                                    <?= htmlspecialchars($wo['wo_number']); ?>
-                                </td>
-                                <td>
-                                    <?= htmlspecialchars($wo['work_date']); ?>
-                                </td>
-                                <td>
-                                    <?= htmlspecialchars($wo['customer_name']); ?>
-                                </td>
+                                <td><?= htmlspecialchars($wo['wo_number']); ?></td>
+                                <td><?= htmlspecialchars($wo['work_date']); ?></td>
+                                <td><?= htmlspecialchars($wo['customer_name']); ?></td>
                                 <td>
                                     <?= htmlspecialchars($wo['brand'] . ' ' . $wo['model']); ?>
-                                    <div><small class="text-muted">
-                                            <?= htmlspecialchars($wo['plate_number'] ?: '-'); ?>
-                                        </small></div>
+                                    <div><small class="text-muted"><?= htmlspecialchars($wo['plate_number'] ?: '-'); ?></small>
+                                    </div>
                                 </td>
-                                <td>
-                                    <?= htmlspecialchars($wo['service_name']); ?>
-                                </td>
+                                <td><?= htmlspecialchars($wo['service_name']); ?></td>
                                 <td class="text-end">Rp
-                                    <?= number_format((float) $wo['estimated_service_price'], 0, ',', '.'); ?>
-                                </td>
+                                    <?= number_format((float) $wo['estimated_service_price'], 0, ',', '.'); ?></td>
+                                <td class="text-end">Rp <?= number_format((float) $wo['addons_total'], 0, ',', '.'); ?></td>
+                                <td class="text-end fw-semibold">Rp
+                                    <?= number_format((float) $wo['grand_total'], 0, ',', '.'); ?></td>
                                 <td>
                                     <?php
                                     $statusClass = 'bg-secondary';
@@ -103,7 +98,7 @@
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
+                            <td colspan="10" class="text-center text-muted py-4">
                                 Belum ada data work order.
                             </td>
                         </tr>

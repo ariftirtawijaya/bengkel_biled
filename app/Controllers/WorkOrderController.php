@@ -7,6 +7,7 @@ class WorkOrderController extends Controller
     private CustomerModel $customerModel;
     private VehicleModel $vehicleModel;
     private ServiceModel $serviceModel;
+    private ServiceAddonModel $serviceAddonModel;
 
     public function __construct()
     {
@@ -14,6 +15,7 @@ class WorkOrderController extends Controller
         $this->customerModel = new CustomerModel();
         $this->vehicleModel = new VehicleModel();
         $this->serviceModel = new ServiceModel();
+        $this->serviceAddonModel = new ServiceAddonModel();
     }
 
     public function index(): void
@@ -31,6 +33,7 @@ class WorkOrderController extends Controller
         $customers = $this->customerModel->getAll();
         $vehicles = $this->vehicleModel->getAll();
         $services = $this->serviceModel->getAll();
+        $addons = $this->serviceAddonModel->getAll();
 
         $data = [
             'title' => 'Tambah Work Order',
@@ -38,13 +41,16 @@ class WorkOrderController extends Controller
             'customers' => $customers,
             'vehicles' => $vehicles,
             'services' => $services,
+            'addons' => $addons,
             'vehiclesJson' => json_encode($vehicles, JSON_UNESCAPED_UNICODE),
             'servicesJson' => json_encode($services, JSON_UNESCAPED_UNICODE),
+            'addonsJson' => json_encode($addons, JSON_UNESCAPED_UNICODE),
             'old' => $_SESSION['old'] ?? [],
             'errors' => $_SESSION['errors'] ?? [],
+            'oldAddons' => $_SESSION['old_addons'] ?? [],
         ];
 
-        unset($_SESSION['old'], $_SESSION['errors']);
+        unset($_SESSION['old'], $_SESSION['errors'], $_SESSION['old_addons']);
 
         $this->view('work_orders/create', $data);
     }
@@ -64,6 +70,8 @@ class WorkOrderController extends Controller
             'service_id' => (int) ($_POST['service_id'] ?? 0),
             'complaint' => trim($_POST['complaint'] ?? ''),
             'estimated_service_price' => (float) ($_POST['estimated_service_price'] ?? 0),
+            'addons_total' => 0,
+            'grand_total' => 0,
             'status' => trim($_POST['status'] ?? 'pending'),
             'internal_notes' => trim($_POST['internal_notes'] ?? ''),
         ];
@@ -71,6 +79,10 @@ class WorkOrderController extends Controller
         if ($formData['wo_number'] === '') {
             $formData['wo_number'] = $this->workOrderModel->generateWoNumber();
         }
+
+        $addons = $this->parseAddonInputs();
+        $formData['addons_total'] = $this->sumAddonSubtotals($addons);
+        $formData['grand_total'] = $formData['estimated_service_price'] + $formData['addons_total'];
 
         $errors = $this->validateWorkOrder($formData);
 
@@ -97,12 +109,13 @@ class WorkOrderController extends Controller
         if (!empty($errors)) {
             $_SESSION['errors'] = $errors;
             $_SESSION['old'] = $formData;
+            $_SESSION['old_addons'] = $addons;
             $_SESSION['error'] = 'Gagal menyimpan work order. Periksa kembali input.';
             header('Location: ' . BASE_URL . 'workorder/create');
             exit;
         }
 
-        $this->workOrderModel->create($formData);
+        $this->workOrderModel->create($formData, $addons);
 
         $_SESSION['success'] = 'Work order berhasil ditambahkan.';
         header('Location: ' . BASE_URL . 'workorder');
@@ -122,6 +135,7 @@ class WorkOrderController extends Controller
         $customers = $this->customerModel->getAll();
         $vehicles = $this->vehicleModel->getAll();
         $services = $this->serviceModel->getAll();
+        $addons = $this->serviceAddonModel->getAll();
 
         $data = [
             'title' => 'Edit Work Order',
@@ -129,9 +143,12 @@ class WorkOrderController extends Controller
             'customers' => $customers,
             'vehicles' => $vehicles,
             'services' => $services,
+            'addons' => $addons,
             'vehiclesJson' => json_encode($vehicles, JSON_UNESCAPED_UNICODE),
             'servicesJson' => json_encode($services, JSON_UNESCAPED_UNICODE),
+            'addonsJson' => json_encode($addons, JSON_UNESCAPED_UNICODE),
             'errors' => $_SESSION['errors'] ?? [],
+            'selectedAddons' => $this->workOrderModel->getAddonsByWorkOrderId((int) $id),
         ];
 
         unset($_SESSION['errors']);
@@ -161,9 +178,15 @@ class WorkOrderController extends Controller
             'service_id' => (int) ($_POST['service_id'] ?? 0),
             'complaint' => trim($_POST['complaint'] ?? ''),
             'estimated_service_price' => (float) ($_POST['estimated_service_price'] ?? 0),
+            'addons_total' => 0,
+            'grand_total' => 0,
             'status' => trim($_POST['status'] ?? 'pending'),
             'internal_notes' => trim($_POST['internal_notes'] ?? ''),
         ];
+
+        $addons = $this->parseAddonInputs();
+        $formData['addons_total'] = $this->sumAddonSubtotals($addons);
+        $formData['grand_total'] = $formData['estimated_service_price'] + $formData['addons_total'];
 
         $errors = $this->validateWorkOrder($formData);
 
@@ -194,7 +217,7 @@ class WorkOrderController extends Controller
             exit;
         }
 
-        $this->workOrderModel->update((int) $id, $formData);
+        $this->workOrderModel->update((int) $id, $formData, $addons);
 
         $_SESSION['success'] = 'Work order berhasil diupdate.';
         header('Location: ' . BASE_URL . 'workorder');
@@ -214,6 +237,7 @@ class WorkOrderController extends Controller
         $data = [
             'title' => 'Detail Work Order',
             'workOrder' => $workOrder,
+            'addons' => $this->workOrderModel->getAddonsByWorkOrderId((int) $id),
         ];
 
         $this->view('work_orders/show', $data);
@@ -253,5 +277,50 @@ class WorkOrderController extends Controller
         }
 
         return $errors;
+    }
+
+    private function parseAddonInputs(): array
+    {
+        $addonIds = $_POST['addon_id'] ?? [];
+        $addonNames = $_POST['addon_name'] ?? [];
+        $addonPrices = $_POST['addon_price'] ?? [];
+        $addonQtys = $_POST['addon_qty'] ?? [];
+        $addonSubtotals = $_POST['addon_subtotal'] ?? [];
+        $addonNotes = $_POST['addon_notes'] ?? [];
+
+        $result = [];
+
+        foreach ($addonIds as $index => $addonId) {
+            $addonId = (int) $addonId;
+            $name = trim($addonNames[$index] ?? '');
+            $price = (float) ($addonPrices[$index] ?? 0);
+            $qty = (int) ($addonQtys[$index] ?? 0);
+            $subtotal = (float) ($addonSubtotals[$index] ?? 0);
+            $notes = trim($addonNotes[$index] ?? '');
+
+            if ($addonId <= 0 || $name === '' || $qty <= 0) {
+                continue;
+            }
+
+            $result[] = [
+                'addon_id' => $addonId,
+                'addon_name' => $name,
+                'price' => $price,
+                'qty' => $qty,
+                'subtotal' => $subtotal > 0 ? $subtotal : ($price * $qty),
+                'notes' => $notes,
+            ];
+        }
+
+        return $result;
+    }
+
+    private function sumAddonSubtotals(array $addons): float
+    {
+        $total = 0;
+        foreach ($addons as $addon) {
+            $total += (float) $addon['subtotal'];
+        }
+        return $total;
     }
 }

@@ -34,9 +34,7 @@
                         class="form-control <?= !empty($errors['work_date']) ? 'is-invalid' : ''; ?>"
                         value="<?= htmlspecialchars($workOrder['work_date']); ?>" required>
                     <?php if (!empty($errors['work_date'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['work_date']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['work_date']; ?></div>
                     <?php endif; ?>
                 </div>
 
@@ -54,9 +52,7 @@
                         </option>
                     </select>
                     <?php if (!empty($errors['status'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['status']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['status']; ?></div>
                     <?php endif; ?>
                 </div>
 
@@ -73,9 +69,7 @@
                         <?php endforeach; ?>
                     </select>
                     <?php if (!empty($errors['customer_id'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['customer_id']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['customer_id']; ?></div>
                     <?php endif; ?>
                 </div>
 
@@ -86,9 +80,7 @@
                         <option value="">-- Pilih Kendaraan --</option>
                     </select>
                     <?php if (!empty($errors['vehicle_id'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['vehicle_id']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['vehicle_id']; ?></div>
                     <?php endif; ?>
                 </div>
 
@@ -108,9 +100,7 @@
                         <?php endforeach; ?>
                     </select>
                     <?php if (!empty($errors['service_id'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['service_id']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['service_id']; ?></div>
                     <?php endif; ?>
                 </div>
 
@@ -120,9 +110,7 @@
                         class="form-control <?= !empty($errors['estimated_service_price']) ? 'is-invalid' : ''; ?>"
                         value="<?= (float) $workOrder['estimated_service_price']; ?>" required>
                     <?php if (!empty($errors['estimated_service_price'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['estimated_service_price']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['estimated_service_price']; ?></div>
                     <?php endif; ?>
                 </div>
 
@@ -139,6 +127,45 @@
                 </div>
             </div>
 
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-1">Add-on Pekerjaan</h5>
+                    <p class="text-muted mb-0">Tambahkan pekerjaan tambahan bila diperlukan.</p>
+                </div>
+                <button type="button" class="btn btn-outline-primary" id="btnAddAddonRow">
+                    <i class="bi bi-plus-circle me-1"></i> Tambah Add-on
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle" id="addonsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nama Add-on</th>
+                            <th width="120">Harga</th>
+                            <th width="100">Qty</th>
+                            <th width="140">Subtotal</th>
+                            <th>Catatan</th>
+                            <th width="80">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="addonsTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="row g-3 mt-2">
+                <div class="col-md-4 offset-md-8">
+                    <label class="form-label">Total Add-on</label>
+                    <input type="text" id="addons_total_display" class="form-control" value="0" readonly>
+                </div>
+                <div class="col-md-4 offset-md-8">
+                    <label class="form-label">Grand Total Work Order</label>
+                    <input type="text" id="grand_total_display" class="form-control fw-semibold" value="0" readonly>
+                </div>
+            </div>
+
             <div class="mt-4 d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-save me-1"></i> Update
@@ -151,7 +178,9 @@
 
 <script>
     window.workOrderVehicles = <?= $vehiclesJson ?: '[]'; ?>;
+    window.workOrderAddons = <?= $addonsJson ?: '[]'; ?>;
     window.workOrderOldVehicleId = "<?= htmlspecialchars((string) $workOrder['vehicle_id']); ?>";
     window.workOrderOldCustomerId = "<?= htmlspecialchars((string) $workOrder['customer_id']); ?>";
     window.workOrderOldServiceId = "<?= htmlspecialchars((string) $workOrder['service_id']); ?>";
+    window.workOrderSelectedAddons = <?= json_encode($selectedAddons ?? [], JSON_UNESCAPED_UNICODE); ?>;
 </script>

@@ -128,6 +128,45 @@
                 </div>
             </div>
 
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-1">Add-on Pekerjaan</h5>
+                    <p class="text-muted mb-0">Tambahkan pekerjaan tambahan bila diperlukan.</p>
+                </div>
+                <button type="button" class="btn btn-outline-primary" id="btnAddAddonRow">
+                    <i class="bi bi-plus-circle me-1"></i> Tambah Add-on
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle" id="addonsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nama Add-on</th>
+                            <th width="120">Harga</th>
+                            <th width="100">Qty</th>
+                            <th width="140">Subtotal</th>
+                            <th>Catatan</th>
+                            <th width="80">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="addonsTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="row g-3 mt-2">
+                <div class="col-md-4 offset-md-8">
+                    <label class="form-label">Total Add-on</label>
+                    <input type="text" id="addons_total_display" class="form-control" value="0" readonly>
+                </div>
+                <div class="col-md-4 offset-md-8">
+                    <label class="form-label">Grand Total Work Order</label>
+                    <input type="text" id="grand_total_display" class="form-control fw-semibold" value="0" readonly>
+                </div>
+            </div>
+
             <div class="mt-4 d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-save me-1"></i> Simpan
@@ -140,7 +179,9 @@
 
 <script>
     window.workOrderVehicles = <?= $vehiclesJson ?: '[]'; ?>;
+    window.workOrderAddons = <?= $addonsJson ?: '[]'; ?>;
     window.workOrderOldVehicleId = "<?= htmlspecialchars((string) ($old['vehicle_id'] ?? '')); ?>";
     window.workOrderOldCustomerId = "<?= htmlspecialchars((string) ($old['customer_id'] ?? '')); ?>";
     window.workOrderOldServiceId = "<?= htmlspecialchars((string) ($old['service_id'] ?? '')); ?>";
+    window.workOrderSelectedAddons = <?= json_encode($oldAddons ?? [], JSON_UNESCAPED_UNICODE); ?>;
 </script>
