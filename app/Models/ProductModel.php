@@ -25,6 +25,15 @@ class ProductModel
         return $result ?: null;
     }
 
+    public function getByCode(string $code): ?array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM products WHERE code = :code LIMIT 1");
+        $stmt->execute(['code' => $code]);
+        $result = $stmt->fetch();
+
+        return $result ?: null;
+    }
+
     public function create(array $data): bool
     {
         $sql = "INSERT INTO products (

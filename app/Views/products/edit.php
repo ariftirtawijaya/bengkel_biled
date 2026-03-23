@@ -10,20 +10,36 @@
     </div>
 </div>
 
+<?php if (!empty($_SESSION['error'])): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?= $_SESSION['error'];
+        unset($_SESSION['error']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
 <div class="card shadow-sm border-0">
     <div class="card-body">
         <form action="<?= BASE_URL; ?>product/update/<?= $product['id']; ?>" method="POST" id="productForm">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Kode Produk</label>
-                    <input type="text" name="code" class="form-control"
+                    <input type="text" name="code"
+                        class="form-control <?= !empty($errors['code']) ? 'is-invalid' : ''; ?>"
                         value="<?= htmlspecialchars($product['code']); ?>" required>
+                    <?php if (!empty($errors['code'])): ?>
+                        <div class="invalid-feedback"><?= $errors['code']; ?></div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-md-8">
                     <label class="form-label">Nama Produk</label>
-                    <input type="text" name="name" class="form-control"
+                    <input type="text" name="name"
+                        class="form-control <?= !empty($errors['name']) ? 'is-invalid' : ''; ?>"
                         value="<?= htmlspecialchars($product['name']); ?>" required>
+                    <?php if (!empty($errors['name'])): ?>
+                        <div class="invalid-feedback"><?= $errors['name']; ?></div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-md-4">
@@ -34,20 +50,32 @@
 
                 <div class="col-md-2">
                     <label class="form-label">Satuan</label>
-                    <input type="text" name="unit" class="form-control"
+                    <input type="text" name="unit"
+                        class="form-control <?= !empty($errors['unit']) ? 'is-invalid' : ''; ?>"
                         value="<?= htmlspecialchars($product['unit']); ?>" required>
+                    <?php if (!empty($errors['unit'])): ?>
+                        <div class="invalid-feedback"><?= $errors['unit']; ?></div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-md-2">
                     <label class="form-label">Stok</label>
-                    <input type="number" step="0.01" name="stock" class="form-control"
+                    <input type="number" step="0.01" name="stock"
+                        class="form-control <?= !empty($errors['stock']) ? 'is-invalid' : ''; ?>"
                         value="<?= (float) $product['stock']; ?>">
+                    <?php if (!empty($errors['stock'])): ?>
+                        <div class="invalid-feedback"><?= $errors['stock']; ?></div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-md-2">
                     <label class="form-label">Min Stok</label>
-                    <input type="number" step="0.01" name="min_stock" class="form-control"
+                    <input type="number" step="0.01" name="min_stock"
+                        class="form-control <?= !empty($errors['min_stock']) ? 'is-invalid' : ''; ?>"
                         value="<?= (float) $product['min_stock']; ?>">
+                    <?php if (!empty($errors['min_stock'])): ?>
+                        <div class="invalid-feedback"><?= $errors['min_stock']; ?></div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-md-2 d-flex align-items-end">
@@ -62,14 +90,22 @@
 
                 <div class="col-md-4">
                     <label class="form-label">Harga Beli</label>
-                    <input type="number" step="0.01" name="purchase_price" id="purchase_price" class="form-control"
+                    <input type="number" step="0.01" name="purchase_price" id="purchase_price"
+                        class="form-control <?= !empty($errors['purchase_price']) ? 'is-invalid' : ''; ?>"
                         value="<?= (float) $product['purchase_price']; ?>" required>
+                    <?php if (!empty($errors['purchase_price'])): ?>
+                        <div class="invalid-feedback"><?= $errors['purchase_price']; ?></div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">Margin (%)</label>
-                    <input type="number" step="0.01" name="margin_percent" id="margin_percent" class="form-control"
+                    <input type="number" step="0.01" name="margin_percent" id="margin_percent"
+                        class="form-control <?= !empty($errors['margin_percent']) ? 'is-invalid' : ''; ?>"
                         value="<?= (float) $product['margin_percent']; ?>" required>
+                    <?php if (!empty($errors['margin_percent'])): ?>
+                        <div class="invalid-feedback"><?= $errors['margin_percent']; ?></div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-md-4">
