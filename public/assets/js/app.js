@@ -13,8 +13,10 @@ $(document).ready(function () {
 
     calculateSellingPrice();
 
-    if ($('#productsTable').length) {
-        $('#productsTable').DataTable({
+    const $productsTable = $('#productsTable');
+
+    if ($productsTable.length && $productsTable.data('has-data') == 1) {
+        $productsTable.DataTable({
             responsive: true,
             pageLength: 10,
             order: [],

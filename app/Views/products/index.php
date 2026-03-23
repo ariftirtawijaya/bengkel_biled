@@ -29,7 +29,8 @@
 <div class="card shadow-sm border-0">
     <div class="card-body">
         <div class="table-responsive">
-            <table id="productsTable" class="table table-bordered table-hover align-middle mb-0">
+            <table id="productsTable" class="table table-bordered table-hover align-middle mb-0"
+                data-has-data="<?= !empty($products) ? '1' : '0'; ?>">
                 <thead class="table-light">
                     <tr>
                         <th width="60">No</th>
