@@ -20,7 +20,7 @@
 
 <div class="card shadow-sm border-0">
     <div class="card-body">
-        <form action="<?= BASE_URL; ?>workorder/store" method="POST">
+        <form action="<?= BASE_URL; ?>workorder/store" method="POST" id="workOrderForm">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Nomor WO</label>
@@ -36,9 +36,7 @@
                         class="form-control <?= !empty($errors['work_date']) ? 'is-invalid' : ''; ?>"
                         value="<?= htmlspecialchars($old['work_date'] ?? date('Y-m-d')); ?>" required>
                     <?php if (!empty($errors['work_date'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['work_date']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['work_date']; ?></div>
                     <?php endif; ?>
                 </div>
 
@@ -56,15 +54,13 @@
                             Cancelled</option>
                     </select>
                     <?php if (!empty($errors['status'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['status']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['status']; ?></div>
                     <?php endif; ?>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Customer</label>
-                    <select name="customer_id"
+                    <select name="customer_id" id="customer_id"
                         class="form-select <?= !empty($errors['customer_id']) ? 'is-invalid' : ''; ?>" required>
                         <option value="">-- Pilih Customer --</option>
                         <?php foreach ($customers as $customer): ?>
@@ -74,58 +70,48 @@
                         <?php endforeach; ?>
                     </select>
                     <?php if (!empty($errors['customer_id'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['customer_id']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['customer_id']; ?></div>
                     <?php endif; ?>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Kendaraan</label>
-                    <select name="vehicle_id"
+                    <select name="vehicle_id" id="vehicle_id"
                         class="form-select <?= !empty($errors['vehicle_id']) ? 'is-invalid' : ''; ?>" required>
                         <option value="">-- Pilih Kendaraan --</option>
-                        <?php foreach ($vehicles as $vehicle): ?>
-                            <option value="<?= $vehicle['id']; ?>" <?= (string) ($old['vehicle_id'] ?? '') === (string) $vehicle['id'] ? 'selected' : ''; ?>>
-                                <?= htmlspecialchars($vehicle['brand'] . ' ' . $vehicle['model'] . ' - ' . ($vehicle['plate_number'] ?: '-')); ?>
-                            </option>
-                        <?php endforeach; ?>
                     </select>
                     <?php if (!empty($errors['vehicle_id'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['vehicle_id']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['vehicle_id']; ?></div>
                     <?php endif; ?>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Jasa Utama</label>
-                    <select name="service_id"
+                    <select name="service_id" id="service_id"
                         class="form-select <?= !empty($errors['service_id']) ? 'is-invalid' : ''; ?>" required>
                         <option value="">-- Pilih Jasa --</option>
                         <?php foreach ($services as $service): ?>
-                            <option value="<?= $service['id']; ?>" <?= (string) ($old['service_id'] ?? '') === (string) $service['id'] ? 'selected' : ''; ?>>
+                            <?php if ((int) $service['is_active'] !== 1)
+                                continue; ?>
+                            <option value="<?= $service['id']; ?>" data-price="<?= (float) $service['base_price']; ?>"
+                                <?= (string) ($old['service_id'] ?? '') === (string) $service['id'] ? 'selected' : ''; ?>>
                                 <?= htmlspecialchars($service['name']); ?> - Rp
                                 <?= number_format((float) $service['base_price'], 0, ',', '.'); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                     <?php if (!empty($errors['service_id'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['service_id']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['service_id']; ?></div>
                     <?php endif; ?>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Estimasi Biaya Jasa</label>
-                    <input type="number" step="0.01" name="estimated_service_price"
+                    <input type="number" step="0.01" name="estimated_service_price" id="estimated_service_price"
                         class="form-control <?= !empty($errors['estimated_service_price']) ? 'is-invalid' : ''; ?>"
                         value="<?= htmlspecialchars((string) ($old['estimated_service_price'] ?? '0')); ?>" required>
                     <?php if (!empty($errors['estimated_service_price'])): ?>
-                        <div class="invalid-feedback">
-                            <?= $errors['estimated_service_price']; ?>
-                        </div>
+                        <div class="invalid-feedback"><?= $errors['estimated_service_price']; ?></div>
                     <?php endif; ?>
                 </div>
 
@@ -151,3 +137,10 @@
         </form>
     </div>
 </div>
+
+<script>
+    window.workOrderVehicles = <?= $vehiclesJson ?: '[]'; ?>;
+    window.workOrderOldVehicleId = "<?= htmlspecialchars((string) ($old['vehicle_id'] ?? '')); ?>";
+    window.workOrderOldCustomerId = "<?= htmlspecialchars((string) ($old['customer_id'] ?? '')); ?>";
+    window.workOrderOldServiceId = "<?= htmlspecialchars((string) ($old['service_id'] ?? '')); ?>";
+</script>

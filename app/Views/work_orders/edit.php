@@ -20,7 +20,7 @@
 
 <div class="card shadow-sm border-0">
     <div class="card-body">
-        <form action="<?= BASE_URL; ?>workorder/update/<?= $workOrder['id']; ?>" method="POST">
+        <form action="<?= BASE_URL; ?>workorder/update/<?= $workOrder['id']; ?>" method="POST" id="workOrderForm">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Nomor WO</label>
@@ -62,7 +62,7 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Customer</label>
-                    <select name="customer_id"
+                    <select name="customer_id" id="customer_id"
                         class="form-select <?= !empty($errors['customer_id']) ? 'is-invalid' : ''; ?>" required>
                         <option value="">-- Pilih Customer --</option>
                         <?php foreach ($customers as $customer): ?>
@@ -81,15 +81,9 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Kendaraan</label>
-                    <select name="vehicle_id"
+                    <select name="vehicle_id" id="vehicle_id"
                         class="form-select <?= !empty($errors['vehicle_id']) ? 'is-invalid' : ''; ?>" required>
                         <option value="">-- Pilih Kendaraan --</option>
-                        <?php foreach ($vehicles as $vehicle): ?>
-                            <option value="<?= $vehicle['id']; ?>"
-                                <?= (string) $workOrder['vehicle_id'] === (string) $vehicle['id'] ? 'selected' : ''; ?>>
-                                <?= htmlspecialchars($vehicle['brand'] . ' ' . $vehicle['model'] . ' - ' . ($vehicle['plate_number'] ?: '-')); ?>
-                            </option>
-                        <?php endforeach; ?>
                     </select>
                     <?php if (!empty($errors['vehicle_id'])): ?>
                         <div class="invalid-feedback">
@@ -100,11 +94,13 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Jasa Utama</label>
-                    <select name="service_id"
+                    <select name="service_id" id="service_id"
                         class="form-select <?= !empty($errors['service_id']) ? 'is-invalid' : ''; ?>" required>
                         <option value="">-- Pilih Jasa --</option>
                         <?php foreach ($services as $service): ?>
-                            <option value="<?= $service['id']; ?>"
+                            <?php if ((int) $service['is_active'] !== 1)
+                                continue; ?>
+                            <option value="<?= $service['id']; ?>" data-price="<?= (float) $service['base_price']; ?>"
                                 <?= (string) $workOrder['service_id'] === (string) $service['id'] ? 'selected' : ''; ?>>
                                 <?= htmlspecialchars($service['name']); ?> - Rp
                                 <?= number_format((float) $service['base_price'], 0, ',', '.'); ?>
@@ -120,7 +116,7 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Estimasi Biaya Jasa</label>
-                    <input type="number" step="0.01" name="estimated_service_price"
+                    <input type="number" step="0.01" name="estimated_service_price" id="estimated_service_price"
                         class="form-control <?= !empty($errors['estimated_service_price']) ? 'is-invalid' : ''; ?>"
                         value="<?= (float) $workOrder['estimated_service_price']; ?>" required>
                     <?php if (!empty($errors['estimated_service_price'])): ?>
@@ -152,3 +148,10 @@
         </form>
     </div>
 </div>
+
+<script>
+    window.workOrderVehicles = <?= $vehiclesJson ?: '[]'; ?>;
+    window.workOrderOldVehicleId = "<?= htmlspecialchars((string) $workOrder['vehicle_id']); ?>";
+    window.workOrderOldCustomerId = "<?= htmlspecialchars((string) $workOrder['customer_id']); ?>";
+    window.workOrderOldServiceId = "<?= htmlspecialchars((string) $workOrder['service_id']); ?>";
+</script>

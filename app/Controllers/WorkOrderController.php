@@ -28,12 +28,18 @@ class WorkOrderController extends Controller
 
     public function create(): void
     {
+        $customers = $this->customerModel->getAll();
+        $vehicles = $this->vehicleModel->getAll();
+        $services = $this->serviceModel->getAll();
+
         $data = [
             'title' => 'Tambah Work Order',
             'wo_number' => $this->workOrderModel->generateWoNumber(),
-            'customers' => $this->customerModel->getAll(),
-            'vehicles' => $this->vehicleModel->getAll(),
-            'services' => $this->serviceModel->getAll(),
+            'customers' => $customers,
+            'vehicles' => $vehicles,
+            'services' => $services,
+            'vehiclesJson' => json_encode($vehicles, JSON_UNESCAPED_UNICODE),
+            'servicesJson' => json_encode($services, JSON_UNESCAPED_UNICODE),
             'old' => $_SESSION['old'] ?? [],
             'errors' => $_SESSION['errors'] ?? [],
         ];
@@ -68,16 +74,24 @@ class WorkOrderController extends Controller
 
         $errors = $this->validateWorkOrder($formData);
 
-        if ($formData['customer_id'] <= 0 || !$this->customerModel->getById($formData['customer_id'])) {
+        $customer = $this->customerModel->getById($formData['customer_id']);
+        $vehicle = $this->vehicleModel->getById($formData['vehicle_id']);
+        $service = $this->serviceModel->getById($formData['service_id']);
+
+        if ($formData['customer_id'] <= 0 || !$customer) {
             $errors['customer_id'] = 'Customer wajib dipilih.';
         }
 
-        if ($formData['vehicle_id'] <= 0 || !$this->vehicleModel->getById($formData['vehicle_id'])) {
+        if ($formData['vehicle_id'] <= 0 || !$vehicle) {
             $errors['vehicle_id'] = 'Kendaraan wajib dipilih.';
         }
 
-        if ($formData['service_id'] <= 0 || !$this->serviceModel->getById($formData['service_id'])) {
+        if ($formData['service_id'] <= 0 || !$service) {
             $errors['service_id'] = 'Jasa wajib dipilih.';
+        }
+
+        if ($customer && $vehicle && (int) $vehicle['customer_id'] !== (int) $customer['id']) {
+            $errors['vehicle_id'] = 'Kendaraan tidak cocok dengan customer yang dipilih.';
         }
 
         if (!empty($errors)) {
@@ -105,12 +119,18 @@ class WorkOrderController extends Controller
             exit;
         }
 
+        $customers = $this->customerModel->getAll();
+        $vehicles = $this->vehicleModel->getAll();
+        $services = $this->serviceModel->getAll();
+
         $data = [
             'title' => 'Edit Work Order',
             'workOrder' => $workOrder,
-            'customers' => $this->customerModel->getAll(),
-            'vehicles' => $this->vehicleModel->getAll(),
-            'services' => $this->serviceModel->getAll(),
+            'customers' => $customers,
+            'vehicles' => $vehicles,
+            'services' => $services,
+            'vehiclesJson' => json_encode($vehicles, JSON_UNESCAPED_UNICODE),
+            'servicesJson' => json_encode($services, JSON_UNESCAPED_UNICODE),
             'errors' => $_SESSION['errors'] ?? [],
         ];
 
@@ -147,16 +167,24 @@ class WorkOrderController extends Controller
 
         $errors = $this->validateWorkOrder($formData);
 
-        if ($formData['customer_id'] <= 0 || !$this->customerModel->getById($formData['customer_id'])) {
+        $customer = $this->customerModel->getById($formData['customer_id']);
+        $vehicle = $this->vehicleModel->getById($formData['vehicle_id']);
+        $service = $this->serviceModel->getById($formData['service_id']);
+
+        if ($formData['customer_id'] <= 0 || !$customer) {
             $errors['customer_id'] = 'Customer wajib dipilih.';
         }
 
-        if ($formData['vehicle_id'] <= 0 || !$this->vehicleModel->getById($formData['vehicle_id'])) {
+        if ($formData['vehicle_id'] <= 0 || !$vehicle) {
             $errors['vehicle_id'] = 'Kendaraan wajib dipilih.';
         }
 
-        if ($formData['service_id'] <= 0 || !$this->serviceModel->getById($formData['service_id'])) {
+        if ($formData['service_id'] <= 0 || !$service) {
             $errors['service_id'] = 'Jasa wajib dipilih.';
+        }
+
+        if ($customer && $vehicle && (int) $vehicle['customer_id'] !== (int) $customer['id']) {
+            $errors['vehicle_id'] = 'Kendaraan tidak cocok dengan customer yang dipilih.';
         }
 
         if (!empty($errors)) {

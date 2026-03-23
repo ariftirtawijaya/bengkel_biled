@@ -71,4 +71,66 @@ $(document).ready(function () {
     confirmDelete('.btn-delete-service', 'Hapus jasa?', 'Jasa');
     confirmDelete('.btn-delete-addon', 'Hapus add-on?', 'Add-on');
     confirmDelete('.btn-delete-workorder', 'Hapus work order?', 'Work order');
+
+    function initWorkOrderEnhancements() {
+        const $customer = $('#customer_id');
+        const $vehicle = $('#vehicle_id');
+        const $service = $('#service_id');
+        const $estimated = $('#estimated_service_price');
+
+        if (!$customer.length || !$vehicle.length) {
+            return;
+        }
+
+        const vehicles = Array.isArray(window.workOrderVehicles) ? window.workOrderVehicles : [];
+        const oldVehicleId = window.workOrderOldVehicleId || '';
+        let firstInit = true;
+
+        function buildVehicleLabel(vehicle) {
+            const plate = vehicle.plate_number && vehicle.plate_number !== '' ? vehicle.plate_number : '-';
+            return `${vehicle.brand} ${vehicle.model} - ${plate}`;
+        }
+
+        function renderVehicleOptions(customerId, selectedVehicleId = '') {
+            $vehicle.empty();
+            $vehicle.append('<option value="">-- Pilih Kendaraan --</option>');
+
+            if (!customerId) {
+                return;
+            }
+
+            const filtered = vehicles.filter(function (vehicle) {
+                return String(vehicle.customer_id) === String(customerId);
+            });
+
+            filtered.forEach(function (vehicle) {
+                const isSelected = String(selectedVehicleId) === String(vehicle.id) ? 'selected' : '';
+                $vehicle.append(`<option value="${vehicle.id}" ${isSelected}>${buildVehicleLabel(vehicle)}</option>`);
+            });
+        }
+
+        function fillEstimatedPriceFromService() {
+            const price = parseFloat($service.find(':selected').data('price')) || 0;
+            $estimated.val(price.toFixed(2));
+        }
+
+        $customer.on('change', function () {
+            renderVehicleOptions($(this).val(), '');
+        });
+
+        $service.on('change', function () {
+            fillEstimatedPriceFromService();
+        });
+
+        const currentCustomerId = $customer.val() || window.workOrderOldCustomerId || '';
+        renderVehicleOptions(currentCustomerId, oldVehicleId);
+
+        if (firstInit && $service.val() && (!$estimated.val() || parseFloat($estimated.val()) === 0)) {
+            fillEstimatedPriceFromService();
+        }
+
+        firstInit = false;
+    }
+
+    initWorkOrderEnhancements();
 });
