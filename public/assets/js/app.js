@@ -13,25 +13,27 @@ $(document).ready(function () {
 
     calculateSellingPrice();
 
+    const dtLanguage = {
+        search: 'Cari:',
+        lengthMenu: 'Tampilkan _MENU_ data',
+        info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
+        infoEmpty: 'Tidak ada data',
+        zeroRecords: 'Data tidak ditemukan',
+        paginate: {
+            first: 'Awal',
+            last: 'Akhir',
+            next: '›',
+            previous: '‹'
+        }
+    };
+
     const $productsTable = $('#productsTable');
     if ($productsTable.length && $productsTable.data('has-data') == 1) {
         $productsTable.DataTable({
             responsive: true,
             pageLength: 10,
             order: [],
-            language: {
-                search: 'Cari:',
-                lengthMenu: 'Tampilkan _MENU_ data',
-                info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
-                infoEmpty: 'Tidak ada data',
-                zeroRecords: 'Data tidak ditemukan',
-                paginate: {
-                    first: 'Awal',
-                    last: 'Akhir',
-                    next: '›',
-                    previous: '‹'
-                }
-            }
+            language: dtLanguage
         });
     }
 
@@ -41,19 +43,17 @@ $(document).ready(function () {
             responsive: true,
             pageLength: 10,
             order: [],
-            language: {
-                search: 'Cari:',
-                lengthMenu: 'Tampilkan _MENU_ data',
-                info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
-                infoEmpty: 'Tidak ada data',
-                zeroRecords: 'Data tidak ditemukan',
-                paginate: {
-                    first: 'Awal',
-                    last: 'Akhir',
-                    next: '›',
-                    previous: '‹'
-                }
-            }
+            language: dtLanguage
+        });
+    }
+
+    const $vehiclesTable = $('#vehiclesTable');
+    if ($vehiclesTable.length && $vehiclesTable.data('has-data') == 1) {
+        $vehiclesTable.DataTable({
+            responsive: true,
+            pageLength: 10,
+            order: [],
+            language: dtLanguage
         });
     }
 
@@ -83,6 +83,25 @@ $(document).ready(function () {
         Swal.fire({
             title: 'Hapus customer?',
             html: `Customer <b>${name}</b> akan dihapus.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-delete-vehicle', function () {
+        const url = $(this).data('url');
+        const name = $(this).data('name');
+
+        Swal.fire({
+            title: 'Hapus kendaraan?',
+            html: `Kendaraan <b>${name}</b> akan dihapus.`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Ya, hapus',
