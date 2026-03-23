@@ -40,6 +40,12 @@
                         <td>Rp <?= number_format((float) $workOrder['addons_total'], 0, ',', '.'); ?></td>
                     </tr>
                     <tr>
+                        <th>Total Produk</th>
+                        <td>Rp
+                            <?= number_format((float) $workOrder['products_total'], 0, ',', '.'); ?>
+                        </td>
+                    </tr>
+                    <tr>
                         <th>Grand Total</th>
                         <td class="fw-semibold">Rp <?= number_format((float) $workOrder['grand_total'], 0, ',', '.'); ?>
                         </td>
@@ -120,6 +126,46 @@
                     </div>
                 <?php else: ?>
                     <p class="mb-0 text-muted">Belum ada add-on.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title">Daftar Produk</h5>
+                <?php if (!empty($products)): ?>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama Produk</th>
+                                    <th class="text-end">Harga</th>
+                                    <th class="text-end">Qty</th>
+                                    <th class="text-end">Subtotal</th>
+                                    <th>Catatan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($products as $product): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($product['product_code'] ?: '-'); ?></td>
+                                        <td><?= htmlspecialchars($product['product_name']); ?></td>
+                                        <td class="text-end">Rp <?= number_format((float) $product['price'], 0, ',', '.'); ?>
+                                        </td>
+                                        <td class="text-end"><?= number_format((float) $product['qty'], 2, ',', '.'); ?></td>
+                                        <td class="text-end">Rp <?= number_format((float) $product['subtotal'], 0, ',', '.'); ?>
+                                        </td>
+                                        <td><?= htmlspecialchars($product['notes'] ?: '-'); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <p class="mb-0 text-muted">Belum ada produk.</p>
                 <?php endif; ?>
             </div>
         </div>

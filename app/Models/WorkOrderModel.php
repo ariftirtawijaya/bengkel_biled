@@ -70,7 +70,20 @@ class WorkOrderModel
         return $stmt->fetchAll();
     }
 
-    public function create(array $data, array $addons = []): bool
+    public function getProductsByWorkOrderId(int $workOrderId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM work_order_products
+            WHERE work_order_id = :work_order_id
+            ORDER BY id ASC
+        ");
+        $stmt->execute(['work_order_id' => $workOrderId]);
+
+        return $stmt->fetchAll();
+    }
+
+    public function create(array $data, array $addons = [], array $products = []): bool
     {
         try {
             $this->db->beginTransaction();
@@ -78,10 +91,10 @@ class WorkOrderModel
             $stmt = $this->db->prepare("
                 INSERT INTO work_orders (
                     wo_number, work_date, customer_id, vehicle_id, service_id,
-                    complaint, estimated_service_price, addons_total, grand_total, status, internal_notes
+                    complaint, estimated_service_price, addons_total, products_total, grand_total, status, internal_notes
                 ) VALUES (
                     :wo_number, :work_date, :customer_id, :vehicle_id, :service_id,
-                    :complaint, :estimated_service_price, :addons_total, :grand_total, :status, :internal_notes
+                    :complaint, :estimated_service_price, :addons_total, :products_total, :grand_total, :status, :internal_notes
                 )
             ");
 
@@ -94,6 +107,7 @@ class WorkOrderModel
                 'complaint' => $data['complaint'],
                 'estimated_service_price' => $data['estimated_service_price'],
                 'addons_total' => $data['addons_total'],
+                'products_total' => $data['products_total'],
                 'grand_total' => $data['grand_total'],
                 'status' => $data['status'],
                 'internal_notes' => $data['internal_notes'],
@@ -102,6 +116,7 @@ class WorkOrderModel
             $workOrderId = (int) $this->db->lastInsertId();
 
             $this->insertAddons($workOrderId, $addons);
+            $this->insertProducts($workOrderId, $products);
 
             $this->db->commit();
             return true;
@@ -111,7 +126,7 @@ class WorkOrderModel
         }
     }
 
-    public function update(int $id, array $data, array $addons = []): bool
+    public function update(int $id, array $data, array $addons = [], array $products = []): bool
     {
         try {
             $this->db->beginTransaction();
@@ -125,6 +140,7 @@ class WorkOrderModel
                     complaint = :complaint,
                     estimated_service_price = :estimated_service_price,
                     addons_total = :addons_total,
+                    products_total = :products_total,
                     grand_total = :grand_total,
                     status = :status,
                     internal_notes = :internal_notes
@@ -140,15 +156,20 @@ class WorkOrderModel
                 'complaint' => $data['complaint'],
                 'estimated_service_price' => $data['estimated_service_price'],
                 'addons_total' => $data['addons_total'],
+                'products_total' => $data['products_total'],
                 'grand_total' => $data['grand_total'],
                 'status' => $data['status'],
                 'internal_notes' => $data['internal_notes'],
             ]);
 
-            $deleteStmt = $this->db->prepare("DELETE FROM work_order_addons WHERE work_order_id = :work_order_id");
-            $deleteStmt->execute(['work_order_id' => $id]);
+            $deleteAddonStmt = $this->db->prepare("DELETE FROM work_order_addons WHERE work_order_id = :work_order_id");
+            $deleteAddonStmt->execute(['work_order_id' => $id]);
+
+            $deleteProductStmt = $this->db->prepare("DELETE FROM work_order_products WHERE work_order_id = :work_order_id");
+            $deleteProductStmt->execute(['work_order_id' => $id]);
 
             $this->insertAddons($id, $addons);
+            $this->insertProducts($id, $products);
 
             $this->db->commit();
             return true;
@@ -181,6 +202,34 @@ class WorkOrderModel
                 'qty' => $addon['qty'],
                 'subtotal' => $addon['subtotal'],
                 'notes' => $addon['notes'],
+            ]);
+        }
+    }
+
+    private function insertProducts(int $workOrderId, array $products): void
+    {
+        if (empty($products)) {
+            return;
+        }
+
+        $stmt = $this->db->prepare("
+            INSERT INTO work_order_products (
+                work_order_id, product_id, product_code, product_name, price, qty, subtotal, notes
+            ) VALUES (
+                :work_order_id, :product_id, :product_code, :product_name, :price, :qty, :subtotal, :notes
+            )
+        ");
+
+        foreach ($products as $product) {
+            $stmt->execute([
+                'work_order_id' => $workOrderId,
+                'product_id' => $product['product_id'],
+                'product_code' => $product['product_code'],
+                'product_name' => $product['product_name'],
+                'price' => $product['price'],
+                'qty' => $product['qty'],
+                'subtotal' => $product['subtotal'],
+                'notes' => $product['notes'],
             ]);
         }
     }

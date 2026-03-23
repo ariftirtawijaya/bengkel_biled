@@ -40,6 +40,7 @@
                         <th>Jasa</th>
                         <th class="text-end">Jasa</th>
                         <th class="text-end">Add-on</th>
+                        <th class="text-end">Produk</th>
                         <th class="text-end">Total</th>
                         <th>Status</th>
                         <th width="240">Aksi</th>
@@ -61,6 +62,7 @@
                                 <td class="text-end">Rp
                                     <?= number_format((float) $wo['estimated_service_price'], 0, ',', '.'); ?></td>
                                 <td class="text-end">Rp <?= number_format((float) $wo['addons_total'], 0, ',', '.'); ?></td>
+                                <td class="text-end">Rp <?= number_format((float) $wo['products_total'], 0, ',', '.'); ?></td>
                                 <td class="text-end fw-semibold">Rp
                                     <?= number_format((float) $wo['grand_total'], 0, ',', '.'); ?></td>
                                 <td>
@@ -98,7 +100,7 @@
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="10" class="text-center text-muted py-4">
+                            <td colspan="11" class="text-center text-muted py-4">
                                 Belum ada data work order.
                             </td>
                         </tr>

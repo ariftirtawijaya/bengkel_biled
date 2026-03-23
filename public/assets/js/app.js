@@ -77,9 +77,15 @@ $(document).ready(function () {
         const $vehicle = $('#vehicle_id');
         const $service = $('#service_id');
         const $estimated = $('#estimated_service_price');
+
         const $addonsBody = $('#addonsTableBody');
         const $btnAddAddon = $('#btnAddAddonRow');
+
+        const $productsBody = $('#productsWorkOrderTableBody');
+        const $btnAddProduct = $('#btnAddProductRow');
+
         const $addonsTotal = $('#addons_total_display');
+        const $productsTotal = $('#products_total_display');
         const $grandTotal = $('#grand_total_display');
 
         if (!$customer.length || !$vehicle.length) {
@@ -88,7 +94,9 @@ $(document).ready(function () {
 
         const vehicles = Array.isArray(window.workOrderVehicles) ? window.workOrderVehicles : [];
         const addonsMaster = Array.isArray(window.workOrderAddons) ? window.workOrderAddons : [];
+        const productsMaster = Array.isArray(window.workOrderProducts) ? window.workOrderProducts : [];
         const selectedAddons = Array.isArray(window.workOrderSelectedAddons) ? window.workOrderSelectedAddons : [];
+        const selectedProducts = Array.isArray(window.workOrderSelectedProducts) ? window.workOrderSelectedProducts : [];
         const oldVehicleId = window.workOrderOldVehicleId || '';
 
         function formatNumber(num) {
@@ -96,6 +104,10 @@ $(document).ready(function () {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
             }).format(parseFloat(num || 0));
+        }
+
+        function escapeHtml(text) {
+            return $('<div>').text(text ?? '').html();
         }
 
         function buildVehicleLabel(vehicle) {
@@ -107,13 +119,9 @@ $(document).ready(function () {
             $vehicle.empty();
             $vehicle.append('<option value="">-- Pilih Kendaraan --</option>');
 
-            if (!customerId) {
-                return;
-            }
+            if (!customerId) return;
 
-            const filtered = vehicles.filter(function (vehicle) {
-                return String(vehicle.customer_id) === String(customerId);
-            });
+            const filtered = vehicles.filter(vehicle => String(vehicle.customer_id) === String(customerId));
 
             filtered.forEach(function (vehicle) {
                 const isSelected = String(selectedVehicleId) === String(vehicle.id) ? 'selected' : '';
@@ -137,8 +145,14 @@ $(document).ready(function () {
             return html;
         }
 
-        function escapeHtml(text) {
-            return $('<div>').text(text ?? '').html();
+        function buildProductOptions(selectedId = '') {
+            let html = '<option value="">-- Pilih Produk --</option>';
+            productsMaster.forEach(function (product) {
+                if (parseInt(product.is_active) !== 1) return;
+                const selected = String(selectedId) === String(product.id) ? 'selected' : '';
+                html += `<option value="${product.id}" data-code="${escapeHtml(product.code)}" data-name="${escapeHtml(product.name)}" data-price="${product.selling_price}" ${selected}>${escapeHtml(product.name)} - Rp ${formatNumber(product.selling_price)}</option>`;
+            });
+            return html;
         }
 
         function createAddonRow(addon = null) {
@@ -157,25 +171,42 @@ $(document).ready(function () {
                         </select>
                         <input type="hidden" name="addon_name[]" class="addon-name-hidden" value="${escapeHtml(addonName)}">
                     </td>
-                    <td>
-                        <input type="number" step="0.01" name="addon_price[]" class="form-control addon-price" value="${addonPrice}">
-                    </td>
-                    <td>
-                        <input type="number" name="addon_qty[]" class="form-control addon-qty" value="${addonQty}" min="1">
-                    </td>
-                    <td>
-                        <input type="number" step="0.01" name="addon_subtotal[]" class="form-control addon-subtotal" value="${addonSubtotal}" readonly>
-                    </td>
-                    <td>
-                        <input type="text" name="addon_notes[]" class="form-control" value="${escapeHtml(addonNotes)}">
-                    </td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-addon">Hapus</button>
-                    </td>
+                    <td><input type="number" step="0.01" name="addon_price[]" class="form-control addon-price" value="${addonPrice}"></td>
+                    <td><input type="number" name="addon_qty[]" class="form-control addon-qty" value="${addonQty}" min="1"></td>
+                    <td><input type="number" step="0.01" name="addon_subtotal[]" class="form-control addon-subtotal" value="${addonSubtotal}" readonly></td>
+                    <td><input type="text" name="addon_notes[]" class="form-control" value="${escapeHtml(addonNotes)}"></td>
+                    <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-remove-addon">Hapus</button></td>
                 </tr>
             `;
-
             $addonsBody.append(rowHtml);
+        }
+
+        function createProductRow(product = null) {
+            const productId = product ? product.product_id : '';
+            const productCode = product ? product.product_code : '';
+            const productName = product ? product.product_name : '';
+            const productPrice = product ? parseFloat(product.price) || 0 : 0;
+            const productQty = product ? parseFloat(product.qty) || 1 : 1;
+            const productSubtotal = product ? parseFloat(product.subtotal) || (productPrice * productQty) : 0;
+            const productNotes = product ? (product.notes || '') : '';
+
+            const rowHtml = `
+                <tr>
+                    <td>
+                        <select name="product_id[]" class="form-select product-select">
+                            ${buildProductOptions(productId)}
+                        </select>
+                        <input type="hidden" name="product_code[]" class="product-code-hidden" value="${escapeHtml(productCode)}">
+                        <input type="hidden" name="product_name[]" class="product-name-hidden" value="${escapeHtml(productName)}">
+                    </td>
+                    <td><input type="number" step="0.01" name="product_price[]" class="form-control product-price" value="${productPrice}"></td>
+                    <td><input type="number" step="0.01" name="product_qty[]" class="form-control product-qty" value="${productQty}" min="0.01"></td>
+                    <td><input type="number" step="0.01" name="product_subtotal[]" class="form-control product-subtotal" value="${productSubtotal}" readonly></td>
+                    <td><input type="text" name="product_notes[]" class="form-control" value="${escapeHtml(productNotes)}"></td>
+                    <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-remove-product">Hapus</button></td>
+                </tr>
+            `;
+            $productsBody.append(rowHtml);
         }
 
         function updateAddonRowFromSelect($row) {
@@ -191,6 +222,21 @@ $(document).ready(function () {
             calculateWorkOrderTotals();
         }
 
+        function updateProductRowFromSelect($row) {
+            const $selected = $row.find('.product-select option:selected');
+            const code = $selected.data('code') || '';
+            const name = $selected.data('name') || '';
+            const price = parseFloat($selected.data('price')) || 0;
+            const qty = parseFloat($row.find('.product-qty').val()) || 1;
+
+            $row.find('.product-code-hidden').val(code);
+            $row.find('.product-name-hidden').val(name);
+            $row.find('.product-price').val(price.toFixed(2));
+            $row.find('.product-subtotal').val((price * qty).toFixed(2));
+
+            calculateWorkOrderTotals();
+        }
+
         function updateAddonSubtotal($row) {
             const price = parseFloat($row.find('.addon-price').val()) || 0;
             const qty = parseInt($row.find('.addon-qty').val()) || 0;
@@ -198,17 +244,30 @@ $(document).ready(function () {
             calculateWorkOrderTotals();
         }
 
+        function updateProductSubtotal($row) {
+            const price = parseFloat($row.find('.product-price').val()) || 0;
+            const qty = parseFloat($row.find('.product-qty').val()) || 0;
+            $row.find('.product-subtotal').val((price * qty).toFixed(2));
+            calculateWorkOrderTotals();
+        }
+
         function calculateWorkOrderTotals() {
             let addonsTotal = 0;
+            let productsTotal = 0;
 
             $addonsBody.find('tr').each(function () {
                 addonsTotal += parseFloat($(this).find('.addon-subtotal').val()) || 0;
             });
 
+            $productsBody.find('tr').each(function () {
+                productsTotal += parseFloat($(this).find('.product-subtotal').val()) || 0;
+            });
+
             const serviceTotal = parseFloat($estimated.val()) || 0;
-            const grandTotal = serviceTotal + addonsTotal;
+            const grandTotal = serviceTotal + addonsTotal + productsTotal;
 
             $addonsTotal.val(formatNumber(addonsTotal));
+            $productsTotal.val(formatNumber(productsTotal));
             $grandTotal.val(formatNumber(grandTotal));
         }
 
@@ -228,15 +287,32 @@ $(document).ready(function () {
             createAddonRow();
         });
 
+        $btnAddProduct.on('click', function () {
+            createProductRow();
+        });
+
         $(document).on('change', '.addon-select', function () {
             updateAddonRowFromSelect($(this).closest('tr'));
+        });
+
+        $(document).on('change', '.product-select', function () {
+            updateProductRowFromSelect($(this).closest('tr'));
         });
 
         $(document).on('input', '.addon-price, .addon-qty', function () {
             updateAddonSubtotal($(this).closest('tr'));
         });
 
+        $(document).on('input', '.product-price, .product-qty', function () {
+            updateProductSubtotal($(this).closest('tr'));
+        });
+
         $(document).on('click', '.btn-remove-addon', function () {
+            $(this).closest('tr').remove();
+            calculateWorkOrderTotals();
+        });
+
+        $(document).on('click', '.btn-remove-product', function () {
             $(this).closest('tr').remove();
             calculateWorkOrderTotals();
         });
@@ -252,12 +328,11 @@ $(document).ready(function () {
             selectedAddons.forEach(function (addon) {
                 createAddonRow(addon);
             });
+        }
 
-            $addonsBody.find('tr').each(function () {
-                updateAddonRowFromSelect($(this));
-                const existingQty = parseInt($(this).find('.addon-qty').val()) || 1;
-                const existingPrice = parseFloat($(this).find('.addon-price').val()) || 0;
-                $(this).find('.addon-subtotal').val((existingPrice * existingQty).toFixed(2));
+        if (selectedProducts.length > 0) {
+            selectedProducts.forEach(function (product) {
+                createProductRow(product);
             });
         }
 
