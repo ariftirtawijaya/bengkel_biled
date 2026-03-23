@@ -44,89 +44,31 @@ $(document).ready(function () {
     initDataTable('#vehiclesTable');
     initDataTable('#servicesTable');
     initDataTable('#serviceAddonsTable');
+    initDataTable('#workOrdersTable');
 
-    $(document).on('click', '.btn-delete-product', function () {
-        const url = $(this).data('url');
-        const name = $(this).data('name');
+    function confirmDelete(buttonSelector, titleText, entityLabel) {
+        $(document).on('click', buttonSelector, function () {
+            const url = $(this).data('url');
+            const name = $(this).data('name');
 
-        Swal.fire({
-            title: 'Hapus produk?',
-            html: `Produk <b>${name}</b> akan dihapus.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, hapus',
-            cancelButtonText: 'Batal',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) window.location.href = url;
+            Swal.fire({
+                title: titleText,
+                html: `${entityLabel} <b>${name}</b> akan dihapus.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, hapus',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) window.location.href = url;
+            });
         });
-    });
+    }
 
-    $(document).on('click', '.btn-delete-customer', function () {
-        const url = $(this).data('url');
-        const name = $(this).data('name');
-
-        Swal.fire({
-            title: 'Hapus customer?',
-            html: `Customer <b>${name}</b> akan dihapus.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, hapus',
-            cancelButtonText: 'Batal',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) window.location.href = url;
-        });
-    });
-
-    $(document).on('click', '.btn-delete-vehicle', function () {
-        const url = $(this).data('url');
-        const name = $(this).data('name');
-
-        Swal.fire({
-            title: 'Hapus kendaraan?',
-            html: `Kendaraan <b>${name}</b> akan dihapus.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, hapus',
-            cancelButtonText: 'Batal',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) window.location.href = url;
-        });
-    });
-
-    $(document).on('click', '.btn-delete-service', function () {
-        const url = $(this).data('url');
-        const name = $(this).data('name');
-
-        Swal.fire({
-            title: 'Hapus jasa?',
-            html: `Jasa <b>${name}</b> akan dihapus.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, hapus',
-            cancelButtonText: 'Batal',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) window.location.href = url;
-        });
-    });
-
-    $(document).on('click', '.btn-delete-addon', function () {
-        const url = $(this).data('url');
-        const name = $(this).data('name');
-
-        Swal.fire({
-            title: 'Hapus add-on?',
-            html: `Add-on <b>${name}</b> akan dihapus.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, hapus',
-            cancelButtonText: 'Batal',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) window.location.href = url;
-        });
-    });
+    confirmDelete('.btn-delete-product', 'Hapus produk?', 'Produk');
+    confirmDelete('.btn-delete-customer', 'Hapus customer?', 'Customer');
+    confirmDelete('.btn-delete-vehicle', 'Hapus kendaraan?', 'Kendaraan');
+    confirmDelete('.btn-delete-service', 'Hapus jasa?', 'Jasa');
+    confirmDelete('.btn-delete-addon', 'Hapus add-on?', 'Add-on');
+    confirmDelete('.btn-delete-workorder', 'Hapus work order?', 'Work order');
 });
