@@ -91,6 +91,8 @@
                                             class="btn btn-sm btn-info text-white">Detail</a>
                                         <a href="<?= BASE_URL; ?>workorder/print/<?= $wo['id']; ?>" target="_blank"
                                             class="btn btn-sm btn-dark">Print</a>
+                                        <a href="<?= BASE_URL; ?>payment/workorder/<?= $wo['id']; ?>"
+                                            class="btn btn-sm btn-success">Bayar</a>
                                         <a href="<?= BASE_URL; ?>workorder/edit/<?= $wo['id']; ?>"
                                             class="btn btn-sm btn-warning">Edit</a>
                                         <button type="button" class="btn btn-sm btn-danger btn-delete-workorder"

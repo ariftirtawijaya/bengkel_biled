@@ -13,17 +13,20 @@ class WorkOrderModel
     public function getAll(): array
     {
         $sql = "SELECT 
-                    wo.*,
-                    c.name AS customer_name,
-                    v.brand,
-                    v.model,
-                    v.plate_number,
-                    s.name AS service_name
-                FROM work_orders wo
-                INNER JOIN customers c ON c.id = wo.customer_id
-                INNER JOIN vehicles v ON v.id = wo.vehicle_id
-                INNER JOIN services s ON s.id = wo.service_id
-                ORDER BY wo.id DESC";
+            wo.*,
+            c.name AS customer_name,
+            v.brand,
+            v.model,
+            v.plate_number,
+            s.name AS service_name,
+            COALESCE(SUM(p.amount), 0) AS paid_total
+        FROM work_orders wo
+        INNER JOIN customers c ON c.id = wo.customer_id
+        INNER JOIN vehicles v ON v.id = wo.vehicle_id
+        INNER JOIN services s ON s.id = wo.service_id
+        LEFT JOIN payments p ON p.work_order_id = wo.id
+        GROUP BY wo.id, c.name, v.brand, v.model, v.plate_number, s.name
+        ORDER BY wo.id DESC";
 
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
@@ -32,23 +35,26 @@ class WorkOrderModel
     public function getById(int $id): ?array
     {
         $sql = "SELECT 
-                    wo.*,
-                    c.name AS customer_name,
-                    c.phone AS customer_phone,
-                    c.address AS customer_address,
-                    v.category AS vehicle_category,
-                    v.brand,
-                    v.model,
-                    v.year,
-                    v.plate_number,
-                    v.color,
-                    s.name AS service_name
-                FROM work_orders wo
-                INNER JOIN customers c ON c.id = wo.customer_id
-                INNER JOIN vehicles v ON v.id = wo.vehicle_id
-                INNER JOIN services s ON s.id = wo.service_id
-                WHERE wo.id = :id
-                LIMIT 1";
+            wo.*,
+            c.name AS customer_name,
+            c.phone AS customer_phone,
+            c.address AS customer_address,
+            v.category AS vehicle_category,
+            v.brand,
+            v.model,
+            v.year,
+            v.plate_number,
+            v.color,
+            s.name AS service_name,
+            COALESCE(SUM(p.amount), 0) AS paid_total
+        FROM work_orders wo
+        INNER JOIN customers c ON c.id = wo.customer_id
+        INNER JOIN vehicles v ON v.id = wo.vehicle_id
+        INNER JOIN services s ON s.id = wo.service_id
+        LEFT JOIN payments p ON p.work_order_id = wo.id
+        WHERE wo.id = :id
+        GROUP BY wo.id, c.name, c.phone, c.address, v.category, v.brand, v.model, v.year, v.plate_number, v.color, s.name
+        LIMIT 1";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);

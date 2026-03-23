@@ -25,6 +25,7 @@
                         <li class="nav-item"><a class="nav-link" href="<?= BASE_URL; ?>service">Jasa</a></li>
                         <li class="nav-item"><a class="nav-link" href="<?= BASE_URL; ?>serviceaddon">Add-on</a></li>
                         <li class="nav-item"><a class="nav-link" href="<?= BASE_URL; ?>workorder">Work Order</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= BASE_URL; ?>payment">Pembayaran</a></li>
                     </ul>
                 </div>
             </div>

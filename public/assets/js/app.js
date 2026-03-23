@@ -45,6 +45,7 @@ $(document).ready(function () {
     initDataTable('#servicesTable');
     initDataTable('#serviceAddonsTable');
     initDataTable('#workOrdersTable');
+    initDataTable('#paymentsTable');
 
     function confirmDelete(buttonSelector, titleText, entityLabel) {
         $(document).on('click', buttonSelector, function () {
@@ -71,6 +72,7 @@ $(document).ready(function () {
     confirmDelete('.btn-delete-service', 'Hapus jasa?', 'Jasa');
     confirmDelete('.btn-delete-addon', 'Hapus add-on?', 'Add-on');
     confirmDelete('.btn-delete-workorder', 'Hapus work order?', 'Work order');
+    confirmDelete('.btn-delete-payment', 'Hapus pembayaran?', 'Pembayaran untuk WO');
 
     function initWorkOrderEnhancements() {
         const $customer = $('#customer_id');
