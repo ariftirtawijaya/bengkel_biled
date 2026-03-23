@@ -12,10 +12,12 @@ require_once __DIR__ . '/../app/Core/App.php';
 // Models
 require_once __DIR__ . '/../app/Models/DashboardModel.php';
 require_once __DIR__ . '/../app/Models/ProductModel.php';
+require_once __DIR__ . '/../app/Models/CustomerModel.php';
 
 // Controllers
 require_once __DIR__ . '/../app/Controllers/HomeController.php';
 require_once __DIR__ . '/../app/Controllers/DashboardController.php';
 require_once __DIR__ . '/../app/Controllers/ProductController.php';
+require_once __DIR__ . '/../app/Controllers/CustomerController.php';
 
 $app = new App();
