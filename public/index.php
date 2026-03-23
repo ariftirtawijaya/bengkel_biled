@@ -9,9 +9,11 @@ require_once __DIR__ . '/../app/Core/View.php';
 require_once __DIR__ . '/../app/Core/Database.php';
 require_once __DIR__ . '/../app/Core/App.php';
 
+// Models
+require_once __DIR__ . '/../app/Models/DashboardModel.php';
+
 // Controllers
 require_once __DIR__ . '/../app/Controllers/HomeController.php';
 require_once __DIR__ . '/../app/Controllers/DashboardController.php';
 
-// Jalankan aplikasi
 $app = new App();

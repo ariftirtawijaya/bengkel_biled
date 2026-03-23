@@ -5,14 +5,11 @@ class DashboardController extends Controller
 {
     public function index(): void
     {
+        $model = new DashboardModel();
+
         $data = [
             'title' => 'Dashboard',
-            'summary' => [
-                'produk' => 0,
-                'customer' => 0,
-                'work_order' => 0,
-                'omzet' => 0,
-            ]
+            'summary' => $model->getSummary(),
         ];
 
         $this->view('dashboard/index', $data);
